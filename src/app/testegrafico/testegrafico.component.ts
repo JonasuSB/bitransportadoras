@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import * as echarts from 'echarts';
-import { shippingsData } from './mock';
+import { shippingsData } from '../model/mock';
 
 
 @Component({
@@ -20,21 +20,36 @@ export class TestegraficoComponent implements OnInit {
   initChart(): void {
     const chartDom = document.getElementById('main')!;
     const myChart = echarts.init(chartDom);
+    const filteredData = shippingsData.items.filter(item =>
+      item.waintPrintItems > 0 ||
+      item.separatingItems > 0 ||
+      item.expeditingItems > 0 ||
+      item.expeditionFinItems > 0
+    );
     const option: echarts.EChartsOption = {
       title: {
         text: 'Gráfico de Barras Exemplo'
       },
-      tooltip: {trigger: 'axis',
+      tooltip: {
+        trigger: 'axis',
         axisPointer: {
           type: 'shadow',
         },
       },
+      legend: {},
+      grid: {
+        left: '3%',
+        right: '4%',
+        top: '10%',
+        bottom: '3%',
+        containLabel: true
+      },
       xAxis: {
-        type: 'log',
+        type: 'value',
       },
       yAxis: {
         type: 'category',
-        data: shippingsData.items.map((item) => ({
+        data: filteredData.map(item => ({
           value: item.shipping.name,
           textStyle: { fontWeight: 'bold', color: 'black' },
         })),
@@ -44,74 +59,57 @@ export class TestegraficoComponent implements OnInit {
           name: 'Em Preparação',
           type: 'bar',
           stack: 'total',
+          barWidth: 25,
           label: {
             show: true,
           },
           emphasis: {
             focus: 'series',
           },
-          data: shippingsData.items.map((item) => item.waintPrintItems),
+          data: filteredData.map(item => item.waintPrintItems || null),
         },
         {
           name: 'A Separar',
           type: 'bar',
           stack: 'total',
+          barWidth: 25,
           label: {
             show: true,
-            formatter: (params: any) =>
-              params.value.toLocaleString('pt-BR') + ' UN',
           },
           emphasis: {
             focus: 'series',
           },
-          data: shippingsData.items.map((shipping) => shipping.separatingItems),
+          data: filteredData.map(item => item.separatingItems || null),
         },
         {
-          name: 'Valor',
+          name: 'A Expedir',
           type: 'bar',
           stack: 'total',
+          barWidth: 25,
           label: {
             show: true,
-            formatter: (params: any) =>
-              params.value.toLocaleString('pt-BR', {
-                style: 'currency',
-                currency: 'BRL',
-              }),
           },
           emphasis: {
             focus: 'series',
           },
-          data: sellers.items.map((seller) => seller.value),
+          data: filteredData.map(item => item.expeditingItems || null),
         },
         {
-          name: 'Margem',
+          name: 'Expedição Finalizada',
           type: 'bar',
           stack: 'margin',
+          barWidth: 25,
           label: {
             show: true,
-            formatter: (params: any) => `${params.value}%`,
           },
           emphasis: {
             focus: 'series',
           },
-          data: sellers.items.map((seller) => seller.margin),
+          data: filteredData.map(item => item.expeditionFinItems || null),
         },
-        {
-          name: 'Prazo Médio',
-          type: 'bar',
-          stack: 'margin',
-          label: {
-            show: true,
-            formatter: (params: any) => params.value.toLocaleString('pt-BR'),
-          },
-          emphasis: {
-            focus: 'series',
-          },
-          data: sellers.items.map((seller) => seller.average),
-        },
-      ]
+      ],
+      barGap: '15%',
     };
     myChart.setOption(option);
   }
-
 }
